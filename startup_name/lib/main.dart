@@ -65,7 +65,19 @@ class _RandomWordsState extends State<RandomWords> {
         if (index >= _suggestions.length) {
           _suggestions.addAll(generateWordPairs().take(10));
         }
-        return _buildRow(_suggestions[index]);
+        final item = _suggestions[index];
+        return Dismissible(
+          key: ValueKey(item),
+          onDismissed: (direction) {
+            setState(() {
+              _suggestions.removeAt(index);
+            });
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text('$item dismissed')));
+          },
+          background: Container(color: Colors.red),
+          child: _buildRow(_suggestions[index]),
+        );
       },
     );
   }
