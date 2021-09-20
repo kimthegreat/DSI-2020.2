@@ -10,6 +10,80 @@ class _RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
   final _saved = <WordPair>{};
   final _biggerFont = const TextStyle(fontSize: 18);
+  final _text = TextEditingController();
+  @override
+  void dispose() {
+    // limpa o controller quando for liberado
+    _text.dispose();
+    super.dispose();
+  }
+
+// Tela de edição
+  void pushedit() {
+    Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Edit')),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: TextField(
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter a new startup name',
+                ),
+              ),
+            ),
+            Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 130, vertical: 30),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                      backgroundColor: Colors.pink,
+                      elevation: 4,
+                      shadowColor: Colors.black),
+                  child: Text(
+                    'Rename',
+                    style: TextStyle(color: Colors.black54, fontSize: 30),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          // Retrieve the text the user has entered by using the
+                          // TextEditingController.
+                          content: Text(_text.text),
+                        );
+                      },
+                    );
+                  },
+                )),
+            Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 145, vertical: 0),
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      elevation: 4,
+                      shadowColor: Colors.grey),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.black54, fontSize: 25),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ))
+          ],
+        ),
+      );
+    }));
+  }
+
+  //redireciona para fav
   void _pushSaved() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -70,6 +144,9 @@ class _RandomWordsState extends State<RandomWords> {
           key: ValueKey(item),
           onDismissed: (direction) {
             setState(() {
+              if (_saved.contains(_suggestions[index])) {
+                _saved.remove(_suggestions[index]);
+              }
               _suggestions.removeAt(index);
             });
             ScaffoldMessenger.of(context)
@@ -85,24 +162,24 @@ class _RandomWordsState extends State<RandomWords> {
   Widget _buildRow(WordPair pair) {
     final alreadySaved = _saved.contains(pair);
     return ListTile(
-      title: Text(
-        pair.asPascalCase,
-        style: _biggerFont,
-      ),
-      trailing: Icon(
-        alreadySaved ? Icons.favorite : Icons.favorite_border,
-        color: alreadySaved ? Colors.red : null,
-      ),
-      onTap: () {
-        setState(() {
-          if (alreadySaved) {
-            _saved.remove(pair);
-          } else {
-            _saved.add(pair);
-          }
-        });
-      },
-    );
+        title: Text(
+          pair.asPascalCase,
+          style: _biggerFont,
+        ),
+        trailing: IconButton(
+          icon: Icon(alreadySaved ? Icons.favorite : Icons.favorite_border,
+              color: alreadySaved ? Colors.red : null),
+          onPressed: () {
+            setState(() {
+              if (alreadySaved) {
+                _saved.remove(pair);
+              } else {
+                _saved.add(pair);
+              }
+            });
+          },
+        ),
+        onTap: pushedit);
   }
 }
 
