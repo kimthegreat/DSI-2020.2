@@ -11,6 +11,8 @@ class _RandomWordsState extends State<RandomWords> {
   final _saved = <WordPair>{};
   final _biggerFont = const TextStyle(fontSize: 18);
   final _text = TextEditingController();
+  final _text2 = TextEditingController();
+
   @override
   void dispose() {
     // limpa o controller quando for liberado
@@ -18,8 +20,13 @@ class _RandomWordsState extends State<RandomWords> {
     super.dispose();
   }
 
-// Tela de edição
-  void pushedit() {
+//update dos itens
+  void editpair(index, first, second) {
+    return _suggestions.insert(index, WordPair(first, second));
+  }
+
+// Tela de edição em construção
+  void pushedit(index) {
     Navigator.of(context)
         .push(MaterialPageRoute<void>(builder: (BuildContext context) {
       return Scaffold(
@@ -30,37 +37,56 @@ class _RandomWordsState extends State<RandomWords> {
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               child: TextField(
+                controller: _text,
                 decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Enter a new startup name',
-                ),
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter the new name',
+                    labelText: 'Startup first name'),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: TextField(
+                controller: _text2,
+                decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter the new name',
+                    labelText: 'Startup second name'),
               ),
             ),
             Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 130, vertical: 30),
                 child: TextButton(
-                  style: TextButton.styleFrom(
-                      backgroundColor: Colors.pink,
-                      elevation: 4,
-                      shadowColor: Colors.black),
-                  child: Text(
-                    'Rename',
-                    style: TextStyle(color: Colors.black54, fontSize: 30),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          // Retrieve the text the user has entered by using the
-                          // TextEditingController.
-                          content: Text(_text.text),
+                    style: TextButton.styleFrom(
+                        backgroundColor: Colors.pink,
+                        elevation: 4,
+                        shadowColor: Colors.black),
+                    child: Text(
+                      'Rename',
+                      style: TextStyle(color: Colors.black54, fontSize: 30),
+                    ),
+                    onPressed: () {
+                      if (_text.text != '' && _text2.text != '') {
+                        setState(() {
+                          _suggestions.removeAt(index);
+                          editpair(index, _text.text, _text2.text);
+                        });
+                        _text.clear();
+                        _text2.clear();
+                        Navigator.pop(context);
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              content:
+                                  Text('A field is empty! Please input a name'),
+                            );
+                          },
                         );
-                      },
-                    );
-                  },
-                )),
+                      }
+                    })),
             Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 145, vertical: 0),
@@ -74,6 +100,8 @@ class _RandomWordsState extends State<RandomWords> {
                     style: TextStyle(color: Colors.black54, fontSize: 25),
                   ),
                   onPressed: () {
+                    _text.clear();
+                    _text2.clear();
                     Navigator.pop(context);
                   },
                 ))
@@ -115,17 +143,16 @@ class _RandomWordsState extends State<RandomWords> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Startup Name Generator'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.list),
-            onPressed: _pushSaved,
-          )
-        ],
-      ),
-      body: _buildSuggestions(),
-    );
+        appBar: AppBar(
+          title: Text('Startup Name Generator'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.list),
+              onPressed: _pushSaved,
+            )
+          ],
+        ),
+        body: _buildSuggestions());
   }
 
   Widget _buildSuggestions() {
@@ -153,13 +180,13 @@ class _RandomWordsState extends State<RandomWords> {
                 .showSnackBar(SnackBar(content: Text('$item dismissed')));
           },
           background: Container(color: Colors.red),
-          child: _buildRow(_suggestions[index]),
+          child: _buildRow(index, _suggestions[index]),
         );
       },
     );
   }
 
-  Widget _buildRow(WordPair pair) {
+  Widget _buildRow(index, WordPair pair) {
     final alreadySaved = _saved.contains(pair);
     return ListTile(
         title: Text(
@@ -179,7 +206,9 @@ class _RandomWordsState extends State<RandomWords> {
             });
           },
         ),
-        onTap: pushedit);
+        onTap: () {
+          pushedit(index);
+        });
   }
 }
 
